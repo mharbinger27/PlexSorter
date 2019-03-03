@@ -1,0 +1,25 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 15
+VisualStudioVersion = 15.0.28307.421
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PlexSorter", "PlexSorter\PlexSorter.csproj", "{7B272C13-BF34-4FB8-B00A-45A34445838D}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{7B272C13-BF34-4FB8-B00A-45A34445838D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7B272C13-BF34-4FB8-B00A-45A34445838D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7B272C13-BF34-4FB8-B00A-45A34445838D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7B272C13-BF34-4FB8-B00A-45A34445838D}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {8C843872-9DD8-4B54-9D47-AB2562154D0B}
+	EndGlobalSection
+EndGlobal
