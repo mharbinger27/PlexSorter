@@ -192,6 +192,7 @@ namespace PlexSorter
         {
             bool validVideoFile = false;
 
+            // File types that can be processed - ignores anything else
             if (this.Name.EndsWith(".mkv") || this.Name.EndsWith(".mp4"))
             {
                 validVideoFile = true;
@@ -201,6 +202,8 @@ namespace PlexSorter
                 return validVideoFile = false;
             }
 
+            // This is an attempt to differentiate between television and movie files
+            // Assumes television will have season and episode info, i.e. "S01E23"
             Match result = Regex.Match(this.Name, @"S[0-9][0-9]E[0-9][0-9]");
 
             if (result.Success)
@@ -233,14 +236,17 @@ namespace PlexSorter
             }
             else if (this.MediaFileType == FileType.Television)
             {
+                // Extract season number from "S01E23"-style string
                 string[] substrings = this.EpisodeInfo.Split('E');
                 substrings[0] = substrings[0].Replace("S", "");
                 int season = Int32.Parse(substrings[0]);
 
+                // Build path to destination folder
                 string pathToTitleFolder = Path.Combine(this.TelevisionDirectory, this.Title);
                 string pathToSeasonFolder = Path.Combine(pathToTitleFolder, $"Season {season}");
                 this.PathToNewHome = Path.Combine(pathToSeasonFolder, this.ModifiedName);
 
+                // If season folder doesn't yet exist, create it first or File.Move() will fail
                 if (!Directory.Exists(pathToSeasonFolder))
                 {
                     Directory.CreateDirectory(pathToSeasonFolder);
@@ -260,6 +266,7 @@ namespace PlexSorter
 
         internal Match MatchMovieYear()
         {
+            // Assume movie title will have "1984"-style year
             return Regex.Match(this.Name, @"[0-9][0-9][0-9][0-9]");
         }
 
@@ -279,20 +286,24 @@ namespace PlexSorter
 
             if (this.MediaFileType == FileType.Movie)
             {
+                // Get year from movie title
                 result = MatchMovieYear();
                 this.MovieYear = result.Value;
             }
             else if (this.MediaFileType == FileType.Television)
             {
+                // Get episode information from title
                 result = MatchEpisodeInfo();
                 this.EpisodeInfo = result.Value;
             }
 
+            // Clean up file name
             string trimmedName = fileName.Substring(0, (result.Index));
             trimmedName = trimmedName.Replace(".", " ");
             trimmedName = trimmedName.Trim();
             this.Title = trimmedName;
 
+            // Generate final file names
             if (this.MediaFileType == FileType.Movie)
             {
                 this.ModifiedName = $"{trimmedName} ({this.MovieYear}){fileExtension}";
@@ -302,6 +313,7 @@ namespace PlexSorter
                 this.ModifiedName = $"{trimmedName} - {this.EpisodeInfo}{fileExtension}";
             }
 
+            // Update user of recommended changes, and prompt for approval before moving forward
             this.ModifiedPath = Path.Combine(directory, this.ModifiedName);
             Console.WriteLine($"Recommended name: {this.ModifiedName}");
             Console.WriteLine("Accept rename?");
@@ -310,8 +322,9 @@ namespace PlexSorter
 
             if (userInput.ToLower().Contains("y"))
             {
+                // User has approved, so move ahead with modifications
                 this.Name = this.ModifiedName;
-                // TODO: handle renamed file already existing in Watch directory
+
                 if (!File.Exists(this.ModifiedPath))
                 {
                     System.IO.File.Move(this.FullPath, this.ModifiedPath);
@@ -326,6 +339,7 @@ namespace PlexSorter
             }
             else
             {
+                // User did not approve, so abandon processing
                 Console.WriteLine("Name unchanged.  File will not be processed further.");
                 return false;
             }

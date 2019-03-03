@@ -23,8 +23,10 @@ namespace PlexSorter
 
         private static void Run()
         {
+            # region Verify Directories
             string[] args = Environment.GetCommandLineArgs();
 
+            // Check that enough parameters were passed
             if (args.Length < 4)
             {
                 Console.WriteLine("Must pass: directory to watch, movies directory, television directory");
@@ -35,6 +37,25 @@ namespace PlexSorter
             MoviesDirectory = args[2];
             TelevisionDirectory = args[3];
 
+            // Check that directories exist
+            if (!Directory.Exists(WatchDirectory))
+            {
+                Console.WriteLine($"Unable to find Watch directory at {WatchDirectory}. Stopping program.");
+                return;
+            }
+            if (!Directory.Exists(MoviesDirectory))
+            {
+                Console.WriteLine($"Unable to find Movies directory at {MoviesDirectory}. Stopping program.");
+                return;
+            }
+            if (!Directory.Exists(TelevisionDirectory))
+            {
+                Console.WriteLine($"Unable to find Television directory at {TelevisionDirectory}. Stopping program.");
+                return;
+            }
+            # endregion
+
+            // Begin monitoring Watch directory for changes
             using (FileSystemWatcher watcher = new FileSystemWatcher())
             {
                 watcher.Path = WatchDirectory;
@@ -43,59 +64,60 @@ namespace PlexSorter
                 watcher.Changed += new FileSystemEventHandler(OnChanged);
                 watcher.EnableRaisingEvents = true;
                 Console.WriteLine("PlexSorter is running!");
-                //Console.WriteLine("Press 'q' then 'enter' to quit.");
-                while ( true ) ;
+                while (true) ;
             }
         }
 
         private static void OnChanged(object source, FileSystemEventArgs e)
         {
-            if (e.ChangeType == WatcherChangeTypes.Changed)
+            if (!activeMedia.Any(MediaInstance => MediaInstance.Name == e.Name))
             {
-                if (!activeMedia.Any(MediaInstance => MediaInstance.Name == e.Name))
+                // Check for duplicate events - FileSystemWatcher repeats a lot of events
+                if (e.Name == recentFileName)
                 {
-                    // Check for duplicate events - FileSystemWatcher repeats a lot of events
-                    if (e.Name == recentFileName)
-                    {
-                        recentFileName = null;
-                        return;
-                    }
-                    else
-                    {
-                        recentFileName = e.Name;
-                    }
-
-                    // Add instance to collection
-                    MediaInstance instance = new MediaInstance(e.Name, e.FullPath, TelevisionDirectory, MoviesDirectory);
-                    activeMedia.Add(instance);
-
-                    // Wait until file is unlocked before proceeding
-                    WaitForFileAvailability(instance);
-
-                    // Make sure file is of a valid type
-                    if (!instance.IdentifyFileType())
-                    {
-                        activeMedia.Remove(instance);
-                        return;
-                    }
-
-                    Console.WriteLine();
-                    Console.WriteLine($"Input file:       {instance.Name}");
-
-                    bool processSuccess = instance.ProcessVideoFile();
-                    
-                    if (processSuccess)
-                    {
-                        instance.MoveFileToDestination();
-                    }                   
-
-                    activeMedia.Remove(instance);
+                    recentFileName = null;
+                    return;
                 }
+                else
+                {
+                    recentFileName = e.Name;
+                }
+
+                // Add instance to collection
+                MediaInstance instance = new MediaInstance(e.Name, e.FullPath, TelevisionDirectory, MoviesDirectory);
+                activeMedia.Add(instance);
+
+                // Wait until file is unlocked before proceeding
+                WaitForFileAvailability(instance);
+
+                // Make sure file is of a valid type
+                if (!instance.IdentifyFileType())
+                {
+                    activeMedia.Remove(instance);
+                    return;
+                }
+
+                Console.WriteLine();
+                Console.WriteLine($"Input file:       {instance.Name}");
+
+                // Identify media type and rename
+                bool processSuccess = instance.ProcessVideoFile();
+
+                // Move file from Watch directory to proper location
+                if (processSuccess)
+                {
+                    instance.MoveFileToDestination();
+                }
+
+                // Done processing file, so remove reference to it
+                activeMedia.Remove(instance);
             }
+
         }
 
         async private static void WaitForFileAvailability(MediaInstance instance)
         {
+            // Check that file is not locked (open in another application)
             while (!IsFileReady(instance.FullPath))
             {
                 await Task.Delay(1000);
@@ -108,11 +130,12 @@ namespace PlexSorter
         {
             bool isReady;
 
+            // Try to open the file
             try
             {
-                using (FileStream inputStream = File.Open(fileName, 
-                    FileMode.Open, 
-                    FileAccess.Read, 
+                using (FileStream inputStream = File.Open(fileName,
+                    FileMode.Open,
+                    FileAccess.Read,
                     FileShare.None))
                     isReady = inputStream.Length > 0;
             }
@@ -123,8 +146,5 @@ namespace PlexSorter
 
             return isReady;
         }
-
-        private static void OnRenamed(object source, RenamedEventArgs e) =>
-            Console.WriteLine($"File renamed: {e.OldFullPath} renamed to {e.Name}");
     }
 }
