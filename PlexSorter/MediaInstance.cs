@@ -10,165 +10,30 @@ namespace PlexSorter
 {
     public class MediaInstance
     {
-        # region Fields
-        private string fullPath;
-        private string name;
-        private FileType mediaFileType;
-        private bool available;
-        private string modifiedName;
-        private string modifiedPath;
-        private string moviesDirectory;
-        private string televisionDirectory;
-        private string movieYear;
-        private string episodeInfo;
-        private string title;
-        private string pathToNewHome;
-        # endregion
+        # region Properties
+        public string FullPath { get; set; }
 
-        #region Properties
-        public string FullPath
-        {
-            get
-            {
-                return fullPath;
-            }
-            set
-            {
-                fullPath = value;
-            }
-        }
+        public string Name { get; set; }
 
-        public string Name
-        {
-            get
-            {
-                return name;
-            }
-            set
-            {
-                name = value;
-            }
-        }
+        public FileType MediaFileType  { get; set; }
 
-        public FileType MediaFileType
-        {
-            get
-            {
-                return mediaFileType;
-            }
-            set
-            {
-                mediaFileType = value;
-            }
-        }
+        public bool Available  { get; set; }
 
-        public bool Available
-        {
-            get
-            {
-                return available;
-            }
-            set
-            {
-                available = value;
-            }
-        }
+        public string ModifiedName  { get; set; }
 
-        public string ModifiedName
-        {
-            get
-            {
-                return modifiedName;
-            }
-            set
-            {
-                modifiedName = value;
-            }
-        }
+        public string ModifiedPath  { get; set; }
 
-        public string ModifiedPath
-        {
-            get
-            {
-                return modifiedPath;
-            }
-            set
-            {
-                modifiedPath = value;
-            }
-        }
+        public string MoviesDirectory  { get; set; }
 
-        public string MoviesDirectory
-        {
-            get
-            {
-                return moviesDirectory;
-            }
-            set
-            {
-                moviesDirectory = value;
-            }
-        }
+        public string TelevisionDirectory  { get; set; }
 
-        public string TelevisionDirectory
-        {
-            get
-            {
-                return televisionDirectory;
-            }
-            set
-            {
-                televisionDirectory = value;
-            }
-        }
+        public string MovieYear  { get; set; }
 
-        public string MovieYear
-        {
-            get
-            {
-                return movieYear;
-            }
-            set
-            {
-                movieYear = value;
-            }
-        }
+        public string EpisodeInfo  { get; set; }
 
-        public string EpisodeInfo
-        {
-            get
-            {
-                return episodeInfo;
-            }
-            set
-            {
-                episodeInfo = value;
-            }
-        }
+        public string Title  { get; set; }
 
-        public string Title
-        {
-            get
-            {
-                return title;
-            }
-            set
-            {
-                title = value;
-            }
-        }
-
-        public string PathToNewHome
-        {
-            get
-            {
-                return pathToNewHome;
-            }
-            set
-            {
-                pathToNewHome = value;
-            }
-        }
+        public string PathToNewHome  { get; set; }
         # endregion
 
         public enum FileType {Television, Movie, Unknown};
@@ -178,7 +43,7 @@ namespace PlexSorter
             this.FullPath = fullPath;
             this.Name = name;
             this.MediaFileType = FileType.Unknown;
-            this.available = false;
+            this.Available = false;
             this.ModifiedName = null;
             this.TelevisionDirectory = televisionDirectory;
             this.MoviesDirectory = moviesDirectory;
