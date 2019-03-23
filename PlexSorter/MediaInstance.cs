@@ -58,7 +58,7 @@ namespace PlexSorter
             bool validVideoFile = false;
 
             // File types that can be processed - ignores anything else
-            if (this.Name.EndsWith(".mkv") || this.Name.EndsWith(".mp4"))
+            if (this.Name.ToLower().EndsWith(".mkv") || this.Name.ToLower().EndsWith(".mp4"))
             {
                 validVideoFile = true;
             }
@@ -69,7 +69,8 @@ namespace PlexSorter
 
             // This is an attempt to differentiate between television and movie files
             // Assumes television will have season and episode info, i.e. "S01E23"
-            Match result = Regex.Match(this.Name, @"S[0-9][0-9]E[0-9][0-9]");
+            string upperName = this.Name.ToUpper();
+            Match result = Regex.Match(upperName, @"S[0-9][0-9]E[0-9][0-9]");
 
             if (result.Success)
             {
@@ -137,7 +138,7 @@ namespace PlexSorter
 
         internal Match MatchEpisodeInfo()
         {
-            return Regex.Match(this.Name, @"S[0-9][0-9]E[0-9][0-9]");
+            return Regex.Match(this.Name.ToUpper(), @"S[0-9][0-9]E[0-9][0-9]");
         }
 
         internal bool ProcessVideoFile()
@@ -163,19 +164,16 @@ namespace PlexSorter
             }
 
             // Clean up file name
-            string trimmedName = fileName.Substring(0, (result.Index));
-            trimmedName = trimmedName.Replace(".", " ");
-            trimmedName = trimmedName.Trim();
-            this.Title = trimmedName;
+            this.Title = CleanUpFileName(result, fileName);
 
             // Generate final file names
             if (this.MediaFileType == FileType.Movie)
             {
-                this.ModifiedName = $"{trimmedName} ({this.MovieYear}){fileExtension}";
+                this.ModifiedName = $"{this.Title} ({this.MovieYear}){fileExtension}";
             }
             else if (this.MediaFileType == FileType.Television)
             {
-                this.ModifiedName = $"{trimmedName} - {this.EpisodeInfo}{fileExtension}";
+                this.ModifiedName = $"{this.Title} - {this.EpisodeInfo}{fileExtension}";
             }
 
             // Update user of recommended changes, and prompt for approval before moving forward
@@ -208,6 +206,28 @@ namespace PlexSorter
                 Console.WriteLine("Name unchanged.  File will not be processed further.");
                 return false;
             }
+        }
+
+        private static string CleanUpFileName(Match result, string fileName)
+        {
+            string trimmedName = fileName.Substring(0, (result.Index));
+            trimmedName = trimmedName.Replace(".", " ");
+            trimmedName = trimmedName.Trim();
+
+            String[] trimmedNameSplit = trimmedName.Split(' ');
+            string correctedTrimmedName = "";
+            for (int i = 0; i < trimmedNameSplit.Length; i++)
+            {
+                string word = trimmedNameSplit[i].ToLower();
+                char[] characters = trimmedNameSplit[i].ToCharArray();
+                characters[0] = char.ToUpper(characters[0]);
+                trimmedNameSplit[i] = new string(characters);
+
+                correctedTrimmedName += $"{trimmedNameSplit[i]} ";
+            }
+            correctedTrimmedName = correctedTrimmedName.Trim();
+
+            return correctedTrimmedName;
         }
     }
 }

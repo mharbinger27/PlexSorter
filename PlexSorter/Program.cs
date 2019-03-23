@@ -4,6 +4,7 @@ using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace PlexSorter
@@ -63,6 +64,7 @@ namespace PlexSorter
                 watcher.Filter = "*.*";
                 watcher.Changed += new FileSystemEventHandler(OnChanged);
                 watcher.EnableRaisingEvents = true;
+                watcher.IncludeSubdirectories = true;
                 Console.WriteLine("PlexSorter is running!");
                 while (true) ;
             }
@@ -115,12 +117,12 @@ namespace PlexSorter
 
         }
 
-        async private static void WaitForFileAvailability(MediaInstance instance)
+        private static void WaitForFileAvailability(MediaInstance instance)
         {
             // Check that file is not locked (open in another application)
             while (!IsFileReady(instance.FullPath))
             {
-                await Task.Delay(1000);
+                Thread.Sleep(1000);
             }
 
             instance.Available = true;
